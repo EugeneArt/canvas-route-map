@@ -13,7 +13,10 @@
 This library is written in Vanilla JS.
 
 ## Installing
-
+__NPM__
+```javascript
+  npm install canvas-route-map
+```
 ## Options
 * Required attributes:
   * *__container__ : container* - it's a DOM element to render canvas;
