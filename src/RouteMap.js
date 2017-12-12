@@ -1,4 +1,5 @@
-import './astar.js';
+import {astar} from'./astar.js';
+import Graph from './Graph.js';
 
 export default class RouteMap {
   constructor(image, trackColor = {r: 255, g: 255, b: 255}, diagonal = true) {
@@ -67,7 +68,6 @@ export default class RouteMap {
   getPath() {
     const arr = this.getBinaryArray();
     let graph = new Graph(arr, {diagonal: this.options.diagonal});
-
     let startCoordinate = graph.grid[this.options.startPoint.coordinates.y][this.options.startPoint.coordinates.x];
     let endCoordinate = graph.grid[this.options.endPoint.coordinates.y][this.options.endPoint.coordinates.x];
 
