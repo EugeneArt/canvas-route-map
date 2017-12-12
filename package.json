@@ -1,7 +1,7 @@
 {
   "name": "canvas-route-map",
-  "version": "1.0.2",
-  "description": "Interactive map on canvas to create route.",
+  "version": "1.0.0",
+  "description": "Interactive map on canvas to create route by image",
   "main": "lib/canvasRouteMap.js",
   "scripts": {
     "build": "webpack --env dev && webpack --env build && npm run test",
@@ -11,18 +11,16 @@
   },
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/EugeneArt/canvas-route-map"
   },
   "keywords": [
-    "webpack",
-    "es6",
-    "starter",
-    "library",
-    "universal",
-    "umd",
-    "commonjs"
+    "canvas",
+    "graph",
+    "route",
+    "map",
+    "zoom"
   ],
-  "author": "Eugene Artsiukhevich",
+  "author": "Eugene Artsiukhevich ",
   "license": "",
   "bugs": {
     "url": ""
