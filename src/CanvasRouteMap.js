@@ -36,6 +36,7 @@ const privateMethods = {
     }
 
     this.container.append(this.canvas);
+
   }
 };
 
@@ -52,22 +53,22 @@ export default class CanvasRouteMap {
     this.options.canvas = options.canvas || {};
     this.options.map = options.map || {};
 
-    this.options.map.startPoint = options.map.startPoint || {};
+    this.options.map.startPoint = this.options.map.startPoint || {};
     if (Object.keys(this.options.map.startPoint).length && !this.options.map.startPoint.coordinates) {
       throw 'CanvasRouteMap constructor: missing argument coordinates in startPoint';
     }
 
-    this.options.map.endPoint = options.map.endPoint || {};
+    this.options.map.endPoint = this.options.map.endPoint || {};
     if (Object.keys(this.options.map.endPoint).length && !this.options.map.endPoint.coordinates) {
       throw 'CanvasRouteMap constructor: missing argument coordinates in endPoint';
     }
 
     this.isDrawPath = Object.keys(this.options.map.startPoint).length && Object.keys(this.options.map.endPoint).length;
 
-    this.options.map.route = options.map.route || {};
+    this.options.map.route = this.options.map.route || {};
 
-    this.options.map.route.drawing = options.map.route.drawing || {};
-    this.options.map.route.image = options.map.route.image || {};
+    this.options.map.route.drawing = this.options.map.route.drawing || {};
+    this.options.map.route.image = this.options.map.route.image || {};
 
     this.initialization = (async () => {
       this.image = await loadImage(this.url);
@@ -90,6 +91,11 @@ export default class CanvasRouteMap {
     await this.initialization;
     privateMethods.createMap.call(this);
     privateMethods.createCanvas.call(this);
+  }
+
+  async ready(callback) {
+    await this.initialization;
+    callback.call(this);
   }
 }
 
