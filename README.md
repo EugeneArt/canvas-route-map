@@ -48,7 +48,8 @@ __NPM__
       * *__width__(default: 20)* - image width;
       * *__height__(default: 20)* - image height.
 
-
+## Callbacks
+  * ready(callback) - when canvas is ready.
 ## Usage
 * Simple example:
 

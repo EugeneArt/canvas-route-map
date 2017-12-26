@@ -1,6 +1,6 @@
 {
   "name": "canvas-route-map",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Interactive map on canvas to create route by image",
   "main": "lib/canvasRouteMap.js",
   "scripts": {
@@ -20,7 +20,7 @@
     "map",
     "zoom"
   ],
-  "author": "Eugene Artsiukhevich ",
+  "author": "Eugene Artsiukhevich <mailbox.aea@gmail.com>",
   "license": "",
   "bugs": {
     "url": ""
