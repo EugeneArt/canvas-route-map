@@ -207,14 +207,30 @@ const canvasEvents = {
     }
   },
   updateCanvasAfterMove() {
-    //restrict canvas area
-    if (this.tmpCanvasPosX > (this.initialImageWidth / this.zoom - this.initialImageWidth * 0.5 / this.zoom) ||
-      (this.tmpCanvasPosX < -(this.initialImageWidth - this.initialImageWidth * 0.3)) ||
-      (this.tmpCanvasPosY > (this.newImageHeight / this.zoom - this.newImageHeight * 0.3 / this.zoom)) ||
-      (this.tmpCanvasPosY < -(this.newImageHeight - this.newImageHeight * 0.3))
-    ) {
-      return false;
+    console.log(this.zoomCount);
+
+    switch (this.zoomCount) {
+      case 0:
+      case 1:
+      case -1:
+      case -2:
+        if (this.tmpCanvasPosX > (this.initialImageWidth / this.zoom - this.initialImageWidth * 0.6 / this.zoom) ||
+          (this.tmpCanvasPosX < -(this.initialImageWidth - this.initialImageWidth * 0.2)) ||
+          (this.tmpCanvasPosY > (this.newImageHeight / this.zoom - this.newImageHeight * 0.6 / this.zoom)) ||
+          (this.tmpCanvasPosY < -(this.newImageHeight - this.newImageHeight * 0.2))
+        ) return false;
+        break;
+      case 2:
+        if (this.tmpCanvasPosX > (this.initialImageWidth / this.zoom - this.initialImageWidth * 0.65 / this.zoom) ||
+          (this.tmpCanvasPosX < -(this.initialImageWidth - this.initialImageWidth * 0.05)) ||
+          (this.tmpCanvasPosY > (this.newImageHeight / this.zoom - this.newImageHeight * 0.65 / this.zoom)) ||
+          (this.tmpCanvasPosY < -(this.newImageHeight - this.newImageHeight * 0.05))
+        ) return false;
+        break;
+
     }
+    //restrict canvas area
+
 
     this.canvasPosition.deltaX = this.tmpCanvasPosX;
     this.canvasPosition.deltaY = this.tmpCanvasPosY;
