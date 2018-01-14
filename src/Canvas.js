@@ -178,6 +178,33 @@ const canvasEvents = {
 
     // these will be our new x,y position to move the image.
     this.ctx.drawImage(this.image, this.canvasPosition.deltaX, this.canvasPosition.deltaY, this.initialImageWidth, this.newImageHeight);
+    canvasEvents.renverPointImages.call(this);
+  },
+  renverPointImages() {
+    if (this.pointImages) {
+      this.pointImages.forEach((item) => {
+        let coordinates = {};
+
+        switch (item.position) {
+          case 'up':
+            coordinates.x = item.x * this.zoom + this.canvasPosition.deltaX - item.image.width / 2 * this.zoom;
+            coordinates.y = item.y * this.zoom + this.canvasPosition.deltaY - item.image.height * this.zoom;
+            break;
+          case 'center':
+            coordinates.x = item.x * this.zoom + this.canvasPosition.deltaX;
+            coordinates.y = item.y * this.zoom + this.canvasPosition.deltaY;
+            break;
+        }
+
+        this.ctx
+          .drawImage(
+            item.image,
+            coordinates.x,
+            coordinates.y,
+            item.image.width * this.zoom,
+            item.image.height * this.zoom);
+      })
+    }
   },
   updateCanvasAfterMove() {
     //restrict canvas area
@@ -194,6 +221,7 @@ const canvasEvents = {
 
     canvasEvents.renderCanvas.call(this);
     canvasEvents.renderPath.call(this);
+    canvasEvents.renverPointImages.call(this);
   },
   updateCanvasAfterZoom() {
     this.newImageHeight = this.imageHeight / this.imageWidth * this.initialImageWidth;
@@ -204,6 +232,7 @@ const canvasEvents = {
 
     canvasEvents.renderCanvas.call(this);
     canvasEvents.renderPath.call(this);
+    canvasEvents.renverPointImages.call(this);
   },
 };
 
@@ -244,6 +273,7 @@ export default class Canvas {
     this.zoom = 1;
     this.zoomCount = 0;
     this.pathBuffer = [];
+    this.pointImages = [];
 
     this.dragging = false;
 
@@ -287,6 +317,39 @@ export default class Canvas {
     return this.canvas;
   }
 
+  drawPoint(image, x, y, position = 'up') {
+    if (this.pointImages.length < 2) {
+      this.pointImages.push({
+        image: image,
+        x: x,
+        y: y,
+        position: position
+      });
+    }
+
+    let coordinates = {};
+
+    switch (position) {
+      case 'up':
+        coordinates.x = x * this.zoom + this.canvasPosition.deltaX - image.width / 2 * this.zoom;
+        coordinates.y = y * this.zoom + this.canvasPosition.deltaY - image.height * this.zoom;
+        break;
+      case 'center':
+        coordinates.x = x * this.zoom + this.canvasPosition.deltaX;
+        coordinates.y = y * this.zoom + this.canvasPosition.deltaY;
+        break;
+    }
+
+    this.ctx
+      .drawImage(
+        image,
+        coordinates.x,
+        coordinates.y,
+        image.width * this.zoom,
+        image.height * this.zoom);
+
+  }
+
   animatePathWithImage(path, speed = 50, step = 20, image) {
     this.feetImage = image;
     animate.call(this);
@@ -311,8 +374,8 @@ export default class Canvas {
         if (i + step >= path.length) {
           clearInterval(timerId);
           this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-
           this.ctx.drawImage(this.image, this.canvasPosition.deltaX, this.canvasPosition.deltaY, this.initialImageWidth, this.newImageHeight);
+          canvasEvents.renverPointImages.call(this);
           this.pathBuffer = [];
           i = 0;
           timerId = requestAnimationFrame(animate.bind(this));
@@ -345,6 +408,11 @@ export default class Canvas {
           cancelAnimationFrame(timerId);
           this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
           this.ctx.drawImage(this.image, this.canvasPosition.deltaX, this.canvasPosition.deltaY, this.initialImageWidth, this.newImageHeight);
+          if (this.pointImages) {
+            this.pointImages.forEach((item) => {
+              this.drawPoint(item.image, item.x, item.y);
+            })
+          }
           this.pathBuffer = [];
           i = 0;
           timerId = requestAnimationFrame(animate.bind(this));
