@@ -40,30 +40,46 @@ const mouseEvents = {
 
     if (delta > 0) {
       if (this.zoomCount < this.clientZoom) {
-        this.zoomCount += 1;
+        if (canvasZoomX < this.canvasPosition.deltaX ||
+          canvasZoomX > this.canvasPosition.deltaX + this.initialImageWidth ||
+          canvasZoomY < this.canvasPosition.deltaY ||
+          canvasZoomY > this.canvasPosition.deltaY + this.newImageHeight
+        ) {
+          return false;
+        }
 
-        // pinchZoomInG IN
+        // pinchZoom IN
         this.zoomedX = this.canvasPosition.deltaX - (canvasZoomX - this.canvasPosition.deltaX);
         this.zoomedY = this.canvasPosition.deltaY - (canvasZoomY - this.canvasPosition.deltaY);
 
         // scale the image up by 2
         this.initialImageWidth = this.initialImageWidth * 2;
         this.zoom = this.zoom * 2;
+
+        this.zoomCount += 1;
+        canvasEvents.updateCanvasAfterZoom.call(this);
       }
     } else {
-      if (this.zoomCount > -this.clientZoom) {
-        this.zoomCount -= 1;
-
-        // pinchZoomInG OUT
+      if (this.zoomCount > -this.clientZoom + 1) {
+        if (canvasZoomX < this.canvasPosition.deltaX ||
+          canvasZoomX > this.canvasPosition.deltaX + this.initialImageWidth ||
+          canvasZoomY < this.canvasPosition.deltaY ||
+          canvasZoomY > this.canvasPosition.deltaY + this.newImageHeight
+        ) {
+          return false;
+        }
+        // pinchZoom OUT
         this.zoomedX = (this.canvasPosition.deltaX + canvasZoomX) / 2;
         this.zoomedY = (this.canvasPosition.deltaY + canvasZoomY) / 2;
 
         // scale the image down by 2
         this.initialImageWidth = this.initialImageWidth / 2;
         this.zoom = this.zoom / 2;
+
+        this.zoomCount -= 1;
+        canvasEvents.updateCanvasAfterZoom.call(this);
       }
     }
-    canvasEvents.updateCanvasAfterZoom.call(this);
   },
 };
 
@@ -132,13 +148,27 @@ const touchEvents = {
       this.pinchCounter = 0;
       if (this.pinchDistStart - dist < 0) {
         if (this.zoomCount < 2) {
+          if (canvasZoomX < this.canvasPosition.deltaX ||
+            canvasZoomX > this.canvasPosition.deltaX + this.initialImageWidth ||
+            canvasZoomY < this.canvasPosition.deltaY ||
+            canvasZoomY > this.canvasPosition.deltaY + this.newImageHeight
+          ) {
+            return false;
+          }
           touchEvents.pinchZoomIn.call(this, canvasZoomX, canvasZoomY);
           this.zoom = this.zoom * 2;
           this.zoomCount += 1;
         }
       }
       else {
-        if (this.zoomCount > -2) {
+        if (this.zoomCount > -1) {
+          if (canvasZoomX < this.canvasPosition.deltaX ||
+            canvasZoomX > this.canvasPosition.deltaX + this.initialImageWidth ||
+            canvasZoomY < this.canvasPosition.deltaY ||
+            canvasZoomY > this.canvasPosition.deltaY + this.newImageHeight
+          ) {
+            return false;
+          }
           touchEvents.pinchZoomOut.call(this, canvasZoomX, canvasZoomY);
           this.zoom = this.zoom / 2;
           this.zoomCount -= 1;
@@ -206,9 +236,7 @@ const canvasEvents = {
       })
     }
   },
-  updateCanvasAfterMove() {
-    console.log(this.zoomCount);
-
+  restrictArea() {
     switch (this.zoomCount) {
       case 0:
       case 1:
@@ -229,8 +257,13 @@ const canvasEvents = {
         break;
 
     }
-    //restrict canvas area
+    return true;
+  },
+  updateCanvasAfterMove() {
 
+    if (!canvasEvents.restrictArea.call(this)) {
+      return false;
+    }
 
     this.canvasPosition.deltaX = this.tmpCanvasPosX;
     this.canvasPosition.deltaY = this.tmpCanvasPosY;
@@ -245,6 +278,7 @@ const canvasEvents = {
     // update the new canvas position
     this.canvasPosition.deltaX = this.zoomedX;
     this.canvasPosition.deltaY = this.zoomedY;
+
 
     canvasEvents.renderCanvas.call(this);
     canvasEvents.renderPath.call(this);
