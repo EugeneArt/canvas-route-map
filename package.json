@@ -1,6 +1,6 @@
 {
   "name": "canvas-route-map",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Interactive map on canvas to create route by image",
   "main": "lib/canvasRouteMap.js",
   "scripts": {

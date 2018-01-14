@@ -106,8 +106,8 @@ const touchEvents = {
   },
   pinchStart(e) {
     this.pinchDistStart = Math.sqrt(
-        (e.touches[0].clientX - e.touches[1].clientX) * (e.touches[0].clientX - e.touches[1].clientX) +
-        (e.touches[0].clientY - e.touches[1].clientY) * (e.touches[0].clientY - e.touches[1].clientY)
+      (e.touches[0].clientX - e.touches[1].clientX) * (e.touches[0].clientX - e.touches[1].clientX) +
+      (e.touches[0].clientY - e.touches[1].clientY) * (e.touches[0].clientY - e.touches[1].clientY)
     );
   },
   pinchEnd() {
@@ -117,8 +117,8 @@ const touchEvents = {
     let r = this.canvas.getBoundingClientRect();
 
     let dist = Math.sqrt(
-        (e.touches[0].clientX - e.touches[1].clientX) * (e.touches[0].clientX - e.touches[1].clientX) +
-        (e.touches[0].clientY - e.touches[1].clientY) * (e.touches[0].clientY - e.touches[1].clientY)
+      (e.touches[0].clientX - e.touches[1].clientX) * (e.touches[0].clientX - e.touches[1].clientX) +
+      (e.touches[0].clientY - e.touches[1].clientY) * (e.touches[0].clientY - e.touches[1].clientY)
     );
 
     let touchClientX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
@@ -181,10 +181,10 @@ const canvasEvents = {
   },
   updateCanvasAfterMove() {
     //restrict canvas area
-    if (this.tmpCanvasPosX > (this.initialImageWidth / this.zoom - this.initialImageWidth * 0.2 / this.zoom) ||
-        (this.tmpCanvasPosX < -(this.initialImageWidth - this.initialImageWidth * 0.2)) ||
-        (this.tmpCanvasPosY > (this.newImageHeight / this.zoom - this.newImageHeight * 0.2 / this.zoom)) ||
-        (this.tmpCanvasPosY < -(this.newImageHeight - this.newImageHeight * 0.2))
+    if (this.tmpCanvasPosX > (this.initialImageWidth / this.zoom - this.initialImageWidth * 0.5 / this.zoom) ||
+      (this.tmpCanvasPosX < -(this.initialImageWidth - this.initialImageWidth * 0.3)) ||
+      (this.tmpCanvasPosY > (this.newImageHeight / this.zoom - this.newImageHeight * 0.3 / this.zoom)) ||
+      (this.tmpCanvasPosY < -(this.newImageHeight - this.newImageHeight * 0.3))
     ) {
       return false;
     }
@@ -213,7 +213,8 @@ export default class Canvas {
               canvasHeight = 600,
               initialImageWidth = 1080,
               scale = true,
-              zoom = 2) {
+              zoom = 2,
+              coordinates) {
 
     this.image = image;
     this.imageWidth = image.width;
@@ -226,6 +227,7 @@ export default class Canvas {
     this.initialImageWidth = initialImageWidth;
     this.scale = scale;
     this.clientZoom = zoom;
+    this.coordinates = coordinates;
 
     this.newImageHeight = this.imageHeight / this.imageWidth * this.initialImageWidth;
 
@@ -263,8 +265,8 @@ export default class Canvas {
     this.canvas.height = this.canvasHeight;
 
     // center of the image currently
-    let imageCenterX = this.initialImageWidth / 2;
-    let imageCenterY = this.newImageHeight / 2;
+    let imageCenterX = this.coordinates.x || this.initialImageWidth / 2;
+    let imageCenterY = this.coordinates.y || this.newImageHeight / 2;
 
     // subtract the canvas size by the image center, that's how far we need to move it.
     this.imageXPos = this.canvasCenterX - imageCenterX;
@@ -274,60 +276,82 @@ export default class Canvas {
     this.canvasPosition.deltaY = this.imageYPos;
 
     this.canvas
-        .getContext('2d')
-        .drawImage(
-            this.image,
-            this.imageXPos,
-            this.imageYPos,
-            this.initialImageWidth,
-            this.newImageHeight);
+      .getContext('2d')
+      .drawImage(
+        this.image,
+        this.imageXPos,
+        this.imageYPos,
+        this.initialImageWidth,
+        this.newImageHeight);
 
     return this.canvas;
   }
 
   animatePathWithImage(path, speed = 50, step = 20, image) {
     this.feetImage = image;
+    animate.call(this);
+
     let i = 0;
-    let timerId = setInterval(() => {
-      this.pathBuffer.push(path[i]);
-      if (this.feetImage) {
-        this.ctx.drawImage(this.feetImage, (path[i].y * this.zoom + this.canvasPosition.deltaX), (path[i].x * this.zoom + this.canvasPosition.deltaY), this.feetImage.width * this.zoom, this.feetImage.height * this.zoom);
-      } else {
-        this.ctx.fillRect((path[i].y * this.zoom + this.canvasPosition.deltaX), (path[i].x * this.zoom + this.canvasPosition.deltaY), this.print * this.zoom, this.print * this.zoom);
-      }
+    let timerId;
 
-      if (i + step >= path.length) clearInterval(timerId);
-      i += step;
-    }, speed);
+    function animate() {
+      setTimeout(() => {
+        timerId = requestAnimationFrame(animate.bind(this));
+        if (!path[i]) {
+          cancelAnimationFrame(timerId);
+          throw `Can't get a point coordinate. Please check the coordinates`;
+        }
+        this.pathBuffer.push(path[i]);
+        if (this.feetImage) {
+          this.ctx.drawImage(this.feetImage, (path[i].y * this.zoom + this.canvasPosition.deltaX), (path[i].x * this.zoom + this.canvasPosition.deltaY), this.feetImage.width * this.zoom, this.feetImage.height * this.zoom);
+        } else {
+          this.ctx.fillRect((path[i].y * this.zoom + this.canvasPosition.deltaX), (path[i].x * this.zoom + this.canvasPosition.deltaY), this.print * this.zoom, this.print * this.zoom);
+        }
 
-    this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+        if (i + step >= path.length) {
+          clearInterval(timerId);
+          this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
 
-    this.ctx.drawImage(this.image, this.canvasPosition.deltaX, this.canvasPosition.deltaY, this.initialImageWidth, this.newImageHeight);
-    this.pathBuffer = [];
-
-    setTimeout(this.animatePathWithImage.bind(this, path, speed, step, image), path.length * speed / 10);
+          this.ctx.drawImage(this.image, this.canvasPosition.deltaX, this.canvasPosition.deltaY, this.initialImageWidth, this.newImageHeight);
+          this.pathBuffer = [];
+          i = 0;
+          timerId = requestAnimationFrame(animate.bind(this));
+        } else {
+          i += step;
+        }
+      }, step / speed * 100);
+    }
 
   }
 
   animatePathWithDrawing(path, speed = 50, step = 20, color = '#f00', printWeight = 3) {
     this.print = printWeight;
+    this.ctx.fillStyle = color;
+    animate.call(this);
 
     let i = 0;
-    let timerId = setInterval(() => {
-      this.pathBuffer.push(path[i]);
-      this.ctx.fillStyle = color;
-      this.ctx.fillRect((path[i].y * this.zoom + this.canvasPosition.deltaX), (path[i].x * this.zoom + this.canvasPosition.deltaY), this.print * this.zoom, this.print * this.zoom);
+    let timerId;
 
-      if (i + step >= path.length) clearInterval(timerId);
-      i += step;
-    }, speed);
-
-    this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
-
-    this.ctx.drawImage(this.image, this.canvasPosition.deltaX, this.canvasPosition.deltaY, this.initialImageWidth, this.newImageHeight);
-    this.pathBuffer = [];
-
-    setTimeout(this.animatePathWithDrawing.bind(this, path, speed, step, color, printWeight), path.length * speed / 10);
-
+    function animate() {
+      setTimeout(() => {
+        timerId = requestAnimationFrame(animate.bind(this));
+        if (!path[i]) {
+          cancelAnimationFrame(timerId);
+          throw `Can't get a point coordinate. Please check the coordinates`;
+        }
+        this.pathBuffer.push(path[i]);
+        this.ctx.fillRect((path[i].y * this.zoom + this.canvasPosition.deltaX), (path[i].x * this.zoom + this.canvasPosition.deltaY), this.print * this.zoom, this.print * this.zoom);
+        if (i + step >= path.length) {
+          cancelAnimationFrame(timerId);
+          this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight);
+          this.ctx.drawImage(this.image, this.canvasPosition.deltaX, this.canvasPosition.deltaY, this.initialImageWidth, this.newImageHeight);
+          this.pathBuffer = [];
+          i = 0;
+          timerId = requestAnimationFrame(animate.bind(this));
+        } else {
+          i += step;
+        }
+      }, step / speed * 100);
+    }
   }
 }

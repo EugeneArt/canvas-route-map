@@ -22,7 +22,8 @@ const privateMethods = {
     }
   },
   createCanvas() {
-    this.canvasEntity = new Canvas(this.mapCanvas, this.options.canvas.width, this.options.canvas.height, this.options.canvas.initialWidth, this.options.canvas.scale, this.options.canvas.zoom);
+
+    this.canvasEntity = new Canvas(this.mapCanvas, this.options.canvas.width, this.options.canvas.height, this.options.canvas.initialWidth, this.options.canvas.scale, this.options.canvas.zoom, this.startCoordinate);
     this.canvas = this.canvasEntity.getCanvas();
 
     if (this.isDrawPath) {
@@ -61,6 +62,12 @@ export default class CanvasRouteMap {
     this.options.map.endPoint = this.options.map.endPoint || {};
     if (Object.keys(this.options.map.endPoint).length && !this.options.map.endPoint.coordinates) {
       throw 'CanvasRouteMap constructor: missing argument coordinates in endPoint';
+    }
+
+    if(Object.keys(this.options.map.startPoint).length && this.options.map.startPoint.coordinates && Object.keys(this.options.map)) {
+      this.startCoordinate = this.options.map.startPoint.coordinates;
+    } else {
+      this.startCoordinate = {};
     }
 
     this.isDrawPath = Object.keys(this.options.map.startPoint).length && Object.keys(this.options.map.endPoint).length;
