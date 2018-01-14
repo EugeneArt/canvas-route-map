@@ -10,21 +10,21 @@ const privateMethods = {
 
     if (Object.keys(this.options.map).length) {
       this.mapEntity.setOptions(this.options.map);
-
-      if (this.startPointImage) {
-        const startPointEntity = new Point(this.startPointImage, this.options.map.startPoint.image.width, this.options.map.startPoint.image.height);
-        this.mapEntity.drawPoint(startPointEntity.getPoint(), this.options.map.startPoint.coordinates.x, this.options.map.startPoint.coordinates.y, this.options.map.startPoint.image.position);
-      }
-      if (this.endPointImage) {
-        const endPointEntity = new Point(this.endPointImage, this.options.map.endPoint.image.width, this.options.map.endPoint.image.height);
-        this.mapEntity.drawPoint(endPointEntity.getPoint(), this.options.map.endPoint.coordinates.x, this.options.map.endPoint.coordinates.y, this.options.map.endPoint.image.position);
-      }
     }
   },
   createCanvas() {
 
     this.canvasEntity = new Canvas(this.mapCanvas, this.options.canvas.width, this.options.canvas.height, this.options.canvas.initialWidth, this.options.canvas.scale, this.options.canvas.zoom, this.startCoordinate);
     this.canvas = this.canvasEntity.getCanvas();
+
+    if (this.startPointImage) {
+      const startPointEntity = new Point(this.startPointImage, this.options.map.startPoint.image.width, this.options.map.startPoint.image.height);
+      this.canvasEntity.drawPoint(startPointEntity.getPoint(), this.options.map.startPoint.coordinates.x, this.options.map.startPoint.coordinates.y, this.options.map.startPoint.image.position);
+    }
+    if (this.endPointImage) {
+      const endPointEntity = new Point(this.endPointImage, this.options.map.endPoint.image.width, this.options.map.endPoint.image.height);
+      this.canvasEntity.drawPoint(endPointEntity.getPoint(), this.options.map.endPoint.coordinates.x, this.options.map.endPoint.coordinates.y, this.options.map.endPoint.image.position);
+    }
 
     if (this.isDrawPath) {
       const path = this.mapEntity.getPath();
@@ -64,7 +64,7 @@ export default class CanvasRouteMap {
       throw 'CanvasRouteMap constructor: missing argument coordinates in endPoint';
     }
 
-    if(Object.keys(this.options.map.startPoint).length && this.options.map.startPoint.coordinates && Object.keys(this.options.map)) {
+    if (Object.keys(this.options.map.startPoint).length && this.options.map.startPoint.coordinates && Object.keys(this.options.map)) {
       this.startCoordinate = this.options.map.startPoint.coordinates;
     } else {
       this.startCoordinate = {};
